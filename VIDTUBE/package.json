@@ -1,0 +1,27 @@
+{
+  "name": "vidtube",
+  "version": "1.0.0",
+  "description": "inspired from the you tube",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [
+    "nodejs",
+    "mongoose",
+    "expressjs",
+    "backend"
+  ],
+  "author": "Gopal Choudhary",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.4.1"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "mongoose": "^8.8.3"
+  }
+}
