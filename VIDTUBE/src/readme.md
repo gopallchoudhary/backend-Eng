@@ -1,0 +1,1 @@
+1.Each of the model will get its controllers and each controller will get its routes
