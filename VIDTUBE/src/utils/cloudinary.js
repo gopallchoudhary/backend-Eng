@@ -24,10 +24,7 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto",
     });
 
-    console.log(
-      "File uploaded on  cloudinary server, File src: ",
-      response.url
-    );
+    console.log("File uploaded on  cloudinary server, File src: ", response.url);
     //once uploaded we would like delete it from our server
     fs.unlinkSync(localFilePath);
     return response;
