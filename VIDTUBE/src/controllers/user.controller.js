@@ -290,7 +290,12 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
   .json(new ApiResponse(200, {}, "Password changed successfully"))
 })
 
-
+//. Current User 
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+  .status(200)
+  .json(new ApiResponse(200, req.user, "current user fetched successfully"))
+})
 
 //. read_cookie 
 // const readCookie = asyncHandler(async (req, res) => {
