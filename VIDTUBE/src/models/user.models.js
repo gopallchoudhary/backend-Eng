@@ -49,23 +49,26 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
+//. Password_Hashing 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
 
-  this.password = bcrypt.hash(this.password, 10);
+  this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
+//. Password_Comapre
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
+//. Access Token
 userSchema.methods.generateAccessToken =  function () {
     //short lived token
   return jwt.sign(
     {
       _id: this._id,
-      email: this.email,
+      email: this.email,  
       username: this.username,
       fullname: this.fullname,
     },
@@ -74,6 +77,7 @@ userSchema.methods.generateAccessToken =  function () {
   );
 };
 
+//.Refresh Token
 userSchema.methods.generateRefreshToken =  function () {
     // long lived token
     return jwt.sign(
