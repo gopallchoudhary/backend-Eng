@@ -8,9 +8,9 @@ import {
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
-//. Refresh and Access Token generation 
+//. Refresh and Access Token generation
 const generateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -25,7 +25,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
   }
 };
 
-//. Register_User 
+//. Register_User
 const registerUser = asyncHandler(async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
@@ -127,7 +127,7 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-//. Login_User 
+//. Login_User
 const loginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
 
@@ -157,8 +157,6 @@ const loginUser = asyncHandler(async (req, res) => {
   );
   // console.log("Access: ", accessToken);
   // console.log("Refresh: ", refreshToken);
-  
-  
 
   //? loggedInUser
   const loggedInUser = await User.findById(user._id).select(
@@ -189,7 +187,7 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
-//. Logout_User 
+//. Logout_User
 const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
@@ -219,88 +217,122 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"));
 });
 
-//. refresh token end point 
-const refreshAccessToken = asyncHandler(async (req, res) =>{
-
-  const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
-  if(!incomingRefreshToken) {
-    throw new ApiError(401, "Unauthorized request")
+//. refresh token end point
+const refreshAccessToken = asyncHandler(async (req, res) => {
+  const incomingRefreshToken =
+    req.cookies.refreshToken || req.body.refreshToken;
+  if (!incomingRefreshToken) {
+    throw new ApiError(401, "Unauthorized request");
   }
 
   try {
-    const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
 
-    const user = await User.findById(decodedToken._id)
-    if(!user) {
-      throw new ApiError(401, "Invalid refresh token")
+    const user = await User.findById(decodedToken._id);
+    if (!user) {
+      throw new ApiError(401, "Invalid refresh token");
     }
 
-    
-
-    if(incomingRefreshToken !== user?.refreshToken) {
-      throw new ApiError(401, "Refresh token is expired or used")
+    if (incomingRefreshToken !== user?.refreshToken) {
+      throw new ApiError(401, "Refresh token is expired or used");
     }
 
-    const {accessToken, newRefreshToken } = generateAccessAndRefreshTokens(user._id)
-    console.log("Access Token: ", accessToken)
-    console.log("Refresh Token: ", newRefreshToken)
+    const { accessToken, newRefreshToken } = generateAccessAndRefreshTokens(
+      user._id
+    );
+    console.log("Access Token: ", accessToken);
+    console.log("Refresh Token: ", newRefreshToken);
 
     const options = {
       httpOnly: true,
-      secure: true
-    }
+      secure: true,
+    };
 
-    return res 
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", newRefreshToken, options)
-    .json(
-      new ApiResponse(
-        200,
-        {accessToken, refreshToken: newRefreshToken},
-        "Access token refreshed"
-      )
-    )
-
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
+      .json(
+        new ApiResponse(
+          200,
+          { accessToken, refreshToken: newRefreshToken },
+          "Access token refreshed"
+        )
+      );
   } catch (error) {
-    throw new ApiError(402, error?.message ||"Unauthorized access")
+    throw new ApiError(402, error?.message || "Unauthorized access");
   }
-})
+});
 
-//. Change current user Password 
+//. Change current user Password
 const changeCurrentPassword = asyncHandler(async (req, res) => {
-  const {oldPassword, newPassword, confirmPassword} = req.body
+  const { oldPassword, newPassword, confirmPassword } = req.body;
 
-  if(newPassword !== confirmPassword) {
-    throw new ApiError(400, "New password does not match")
+  if (newPassword !== confirmPassword) {
+    throw new ApiError(400, "New password does not match");
   }
 
-  const user = await User.findById(req.user?._id)
+  const user = await User.findById(req.user?._id);
 
-  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
-  if(!isPasswordCorrect) {
-    throw new ApiError(400, "Invalid old Password")
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+  if (!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old Password");
   }
 
-  user.password = newPassword
-  await user.save({validateBeforeSave: false})
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
 
   return res
-  .status(200)
-  .json(new ApiResponse(200, {}, "Password changed successfully"))
-})
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
 
-//. Current User 
+//. Current User
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
-  .status(200)
-  .json(new ApiResponse(200, req.user, "current user fetched successfully"))
-})
+    .status(200)
+    .json(new ApiResponse(200, req.user, "current user fetched successfully"));
+});
 
-//. read_cookie 
+//. Update Account details 
+const updateAccontDetails = asyncHandler(async (req, res) => {
+  const { fullname, email } = req.body;
+
+  if (!fullname && !email) {
+    throw new ApiError(400, "All fields are required");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        fullname,
+        email,
+      },
+    },
+    { new: true }
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details updated successfully"));
+});
+
+//. read_cookie
 // const readCookie = asyncHandler(async (req, res) => {
 //   console.log(req.cookies);
 //   res.send(req.cookies)
 // })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser };
+export {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+  updateAccontDetails
+};
