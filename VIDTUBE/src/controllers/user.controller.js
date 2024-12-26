@@ -16,7 +16,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
-    user.refreshToken = refreshToken; // refreshToken db me store rakhte hai taaki user se bar bar password na puchna pade
+    user.refreshToken = refreshToken; //? refreshToken db me store rakhte hai taaki user se bar bar password na puchna pade
     await user.save({ validateBeforeSave: false });
     return { accessToken, refreshToken };
   } catch (error) {
@@ -267,10 +267,35 @@ const refreshAccessToken = asyncHandler(async (req, res) =>{
   }
 })
 
+//. Change current user Password 
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const {oldPassword, newPassword, confirmPassword} = req.body
+
+  if(newPassword !== confirmPassword) {
+    throw new ApiError(400, "New password does not match")
+  }
+
+  const user = await User.findById(req.user?._id)
+
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+  if(!isPasswordCorrect) {
+    throw new ApiError(400, "Invalid old Password")
+  }
+
+  user.password = newPassword
+  await user.save({validateBeforeSave: false})
+
+  return res
+  .status(200)
+  .json(new ApiResponse(200, {}, "Password changed successfully"))
+})
+
+
+
 //. read_cookie 
 // const readCookie = asyncHandler(async (req, res) => {
 //   console.log(req.cookies);
 //   res.send(req.cookies)
 // })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken };
+export { registerUser, loginUser, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser };
