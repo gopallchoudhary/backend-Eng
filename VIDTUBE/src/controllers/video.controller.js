@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import mongoose, {isValidObjectId} from "mongoose";
+import { log } from "console";
 
 //. Get_All_Videos 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -87,6 +88,13 @@ const updateVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
     //TODO: delete video
+    const video = await Video.findById(videoId)
+    try {
+        await deleteFromCloudinary(video.public_id)
+    } catch (error) {
+        console.log("Error in deleting the video, ERROR: ", error)
+        throw new ApiError(500, "video not deleted")
+    }
 })
 
 //. Toggle publish status 
