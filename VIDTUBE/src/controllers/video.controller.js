@@ -79,8 +79,32 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 //. Update Video 
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
     //TODO: update video details like title, description, thumbnail
+
+    const { videoId } = req.params
+    const {title, description, thumbnail} = req.body
+    
+    if(!title && !description) {
+        throw new ApiError(404, "Title and description are required")
+    }
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {
+                title,
+                description,
+                thumbnail
+            }
+        },
+        {new: true}
+    )
+
+    return res
+    .status(200)
+    .json(new ApiResponse(200, video, "Video details updated successfully "))
+
+    
 
 })
 
