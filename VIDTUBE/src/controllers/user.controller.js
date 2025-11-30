@@ -125,7 +125,7 @@ const registerUser = asyncHandler(async (req, res) => {
       500,
       "Something went wrong in registering user and images were deleted"
     );
-  }
+  } 
 });
 
 //. Login_User
